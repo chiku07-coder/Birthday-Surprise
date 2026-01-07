@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Happy Birthday My Love</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Segoe Script', cursive;
+    background: linear-gradient(135deg, #ffafbd, #ffc3a0, #ffe5d9, #fcd5ce);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Animate gradient background */
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Envelope container */
+.envelope-container {
+    position: relative;
+    width: 80vw;
+    max-width: 350px;
+    height: auto;
+    perspective: 1000px;
+}
+
+/* Envelope body */
+.envelope {
+    width: 100%;
+    height: 200px;
+    background: #ffb6c1;
+    border-radius: 15px;
+    position: relative;
+    transform-style: preserve-3d;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    border: 2px solid #ff7fa3;
+}
+
+/* Decorative hearts pattern on envelope body */
+.envelope::before {
+    content: "❤️❤️❤️";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5em;
+    opacity: 0.15;
+}
+
+/* Flap */
+.flap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(135deg, #ff7fa3, #ff99b0);
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    transform-origin: top;
+    transform: rotateX(0deg);
+    transition: transform 1s cubic-bezier(.68,-0.55,.27,1.55);
+    z-index: 2;
+    border-bottom: 2px solid #ff5c8d;
+}
+
+/* Open flap */
+.envelope.open .flap {
+    transform: rotateX(-180deg);
+}
+
+/* Hidden message */
+.message {
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    color: #fff;
+    text-align: center;
+    z-index: 3;
+    transition: opacity 1s 1s;
+    max-width: 90%;
+    background: rgba(0,0,0,0.25);
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.envelope.open + .message {
+    opacity: 1;
+}
+
+/* Text styles */
+h1 { font-size: 1.8em; margin: 10px 0; text-shadow: 2px 2px 8px rgba(0,0,0,0.6); }
+h2 { font-size: 1.3em; margin: 10px 0; text-shadow: 2px 2px 8px rgba(0,0,0,0.6); }
+#countdown, #typing, footer { font-size: 1.1em; margin: 10px 0; text-shadow: 2px 2px 8px rgba(0,0,0,0.6); }
+
+/* Sparkles */
+.sparkle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: #fff8;
+    border-radius: 50%;
+    animation: sparkleMove linear infinite;
+}
+@keyframes sparkleMove {
+    from { transform: translateY(0) scale(1); opacity: 1; }
+    to { transform: translateY(-120vh) scale(0.5); opacity: 0; }
+}
+
+/* Hearts */
+.heart {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: pink;
+    transform: rotate(-45deg);
+    animation: floatHeart linear infinite;
+    border-radius: 50%;
+}
+.heart::before,
+.heart::after {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: pink;
+    border-radius: 50%;
+}
+.heart::before { top: -6px; left: 0; }
+.heart::after { left: 6px; top: 0; }
+
+@keyframes floatHeart {
+    0% { transform: translateY(0) rotate(-45deg) scale(1); opacity: 1; }
+    100% { transform: translateY(-120vh) rotate(-45deg) scale(0.5); opacity: 0; }
+}
+
+/* Fireworks canvas */
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+</style>
+</head>
+<body>
+
+<!-- Background music -->
+<audio autoplay loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/10/25/audio_6b91d08c53.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Fireworks -->
+<canvas id="fireworks"></canvas>
+
+<!-- Envelope -->
+<div class="envelope-container">
+    <div class="envelope" id="envelope">
+        <div class="flap"></div>
+    </div>
+    <div class="message">
+        <h1>Happy Birthday 🎉</h1>
+        <h2>My Mickuieeee(˶> ₃ <˶)♡ ❤️</h2>
+        <div id="countdown"></div>
+        <div id="typing"></div>
+        <footer>Forever yours,<br>❤️ Your Husband</footer>
+    </div>
+</div>
+
+<script>
+/* ===== Auto-open envelope ===== */
+const envelope = document.getElementById('envelope');
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        envelope.classList.add('open');
+        typeText(); // Start typing message
+    }, 800); // small delay for animation
+});
+
+/* ===== Sparkles ===== */
+function createSparkle() {
+    const sparkle = document.createElement("div");
+    sparkle.classList.add("sparkle");
+    sparkle.style.left = Math.random() * 100 + "vw";
+    sparkle.style.width = sparkle.style.height = (3 + Math.random()*5) + "px";
+    sparkle.style.animationDuration = (4 + Math.random()*6) + "s";
+    document.body.appendChild(sparkle);
+    setTimeout(() => sparkle.remove(), 10000);
+}
+setInterval(createSparkle, 300);
+
+/* ===== Hearts ===== */
+function createHeart() {
+    const heart = document.createElement("div");
+    heart.classList.add("heart");
+    heart.style.left = Math.random() * 100 + "vw";
+    heart.style.animationDuration = (5 + Math.random()*5) + "s";
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 10000);
+}
+setInterval(createHeart, 500);
+
+/* ===== COUNTDOWN ===== */
+const birthday = new Date(2026, 0, 8, 0, 1, 0);
+function updateCountdown() {
+    const now = new Date();
+    const diff = birthday - now;
+    if (diff <= 0) {
+        document.getElementById("countdown").innerHTML = "🎂 It’s Your Special Day! 🎂";
+        return;
+    }
+    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const m = Math.floor((diff / (1000 * 60)) % 60);
+    const s = Math.floor((diff / 1000) % 60);
+    document.getElementById("countdown").innerHTML = `⏳ ${d} Days ${h} Hours ${m} Minutes ${s} Seconds to go`;
+}
+setInterval(updateCountdown, 1000);
+
+/* ===== TYPING EFFECT ===== */
+const text = `Happy Birthday, my Mickuieeeeee ❤️🎂
+Life with you is my favorite love story 💖📖—full of laughter 😄, deep understanding 🤍, and endless affection 🥰.
+You understand me even when I’m being weird,
+make me laugh when I don’t feel like smiling 😗,
+and charm me without even trying ✨😉.
+With you, life is all love 💞, fun,
+and a thousand tiny moments 🌸
+I never want to live without 💫💕😚 I LOVEEE YOUU SOOO SOO MUCHHH MYY HONEYYYPIEE(˶  >   ₃  < ˶)♡`;
+
+let i = 0;
+function typeText() {
+    if (i < text.length) {
+        document.getElementById("typing").innerHTML += text.charAt(i);
+        i++;
+        setTimeout(typeText, 50);
+    }
+}
+
+/* ===== FIREWORKS ===== */
+const canvas = document.getElementById("fireworks");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+let fireworks = [];
+
+function Firework() {
+    this.x = Math.random() * canvas.width;
+    this.y = canvas.height;
+    this.targetY = Math.random() * canvas.height / 2;
+    this.color = `hsl(${Math.random()*360},100%,60%)`;
+    this.exploded = false;
+    this.particles = [];
+}
+
+function Particle(x, y, color) {
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.radius = 2;
+    this.speedX = (Math.random()-0.5)*6;
+    this.speedY = (Math.random()-0.5)*6;
+    this.life = 60;
+}
+
+function animate() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    fireworks.forEach((fw, index) => {
+        if (!fw.exploded) {
+            fw.y -= 5;
+            ctx.fillStyle = fw.color;
+            ctx.fillRect(fw.x, fw.y, 3, 10);
+            if (fw.y <= fw.targetY) {
+                fw.exploded = true;
+                for (let i = 0; i < 30; i++) fw.particles.push(new Particle(fw.x, fw.y, fw.color));
+            }
+        } else {
+            fw.particles.forEach((p, i) => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+                p.life--;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                if (p.life <= 0) fw.particles.splice(i,1);
+            });
+            if (fw.particles.length === 0) fireworks.splice(index,1);
+        }
+    });
+    requestAnimationFrame(animate);
+}
+setInterval(() => fireworks.push(new Firework()), 1200);
+animate();
+</script>
+</body>
+</html>
